@@ -5,8 +5,9 @@
  * @format
  * @flow strict-local
  */
-
+import 'react-native-gesture-handler';
 import React from 'react';
+
 import {
   SafeAreaView,
   StyleSheet,
@@ -25,14 +26,36 @@ import {
 } from 'react-native/Libraries/NewAppScreen';
 import {Provider} from 'react-redux';
 import MoviesDisplay from './screens/MoviesDisplay';
+import MovieDetail from './screens/MovieDetail';
+import { NavigationContainer } from '@react-navigation/native';
+import {createStackNavigator} from '@react-navigation/stack';
 import {store} from './redux/Store';
+import { MenuProvider } from 'react-native-popup-menu';
+
+const Stack = createStackNavigator();
+
+const MyStack = () => {
+  return (
+    //<NavigationContainer>
+      <Stack.Navigator>
+        <Stack.Screen
+          name="MoviesDb"
+          component={MoviesDisplay}
+        />
+        <Stack.Screen name="Movie" component={MovieDetail} />
+      </Stack.Navigator>
+    //</NavigationContainer>
+  );
+};
 
 const App = () => {
   return(
-    <Provider store={store}>
-       <View>
-          <MoviesDisplay />
-        </View>
+  <Provider store={store}>
+    <MenuProvider>
+    <NavigationContainer>
+          <MyStack />
+    </NavigationContainer>
+    </MenuProvider>
     </Provider>
   );
 };

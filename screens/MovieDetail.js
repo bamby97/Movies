@@ -1,13 +1,10 @@
 import React, {Component} from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, Text, View, ActivityIndicator} from 'react-native';
 import FastImage from 'react-native-fast-image';
-import apiCall from '../services/MoviesDbApiActionCreator';
-import ParallaxScrollView from 'react-native-parallax-scroll-view';
+import {getMovieDetails} from '../services/MoviesDbApiActionCreator';
+import {connect} from 'react-redux';
+import ParallaxScroll from '@monterosa/react-native-parallax-scroll';
 
-
-const HEADER_EXPANDED_HEIGHT = 300
-const HEADER_COLLAPSED_HEIGHT = 60
-const { width: SCREEN_WIDTH } = Dimensions.get('screen')
 
 
 class MovieDetail extends Component{
@@ -16,14 +13,19 @@ class MovieDetail extends Component{
         this.state={
         }
     }
+    language="en-US"
     componentDidMount(){
-      this.props.apiCall('https://api.themoviedb.org/3/movie/'+this.state.movieId+'?api_key=1ee6cf48a26e103af8d875ebd44c7a9a&language=en-US');
+      console.log("propsDidMount",this.props)
+      const id=this.props.route.params.id
+      const lan=this.props.route.params.lan
+      this.props.getMovieDetails(id,lan);
   }
+  
   renderParallaxHeader = (value) => {
     return <FastImage
     style={Styles.image}
     source={{
-        uri: 'https://image.tmdb.org/t/p/w500/bvYjhsbxOBwpm8xLE5BhdA3a8CZ.jpg',
+        uri: 'https://image.tmdb.org/t/p/w500'+this.props.route.params.poster,
         //headers: { Authorization: 'someAuthToken' },
         priority: FastImage.priority.normal,
     }}
@@ -33,7 +35,7 @@ class MovieDetail extends Component{
   renderFixedHeader = (value) => {
     return (
       <View style={Styles.fixedHeader}>
-        <Text style={{color: 'white'}}>Fixed Header</Text>
+        <Text style={{color: 'white'}}>{this.props.route.params.title}</Text>
       </View>
     );
   };
@@ -49,25 +51,44 @@ class MovieDetail extends Component{
       </View>
     );
   };
+
+  renderParallaxForeground= (value) => {
+    return(
+      <View style={Styles.foreground}>
+        <Text style={Styles.title}>{this.props.route.params.title}</Text>
+        </View>
+    );
+  }
     render(){
-        
+      console.log("props",this.props)
+      const movie = this.props.data
       const IHeight = 250;
       const HeaderHeight = 50;
-  
+      console.log("MOVIE",movie)
       return (
-        <SafeAreaView style={{flex: 1}}>
-          <ParallaxScrollView
-            style={{flex: 1}}
-            parallaxHeaderHeight={IHeight}
-            stickyHeaderHeight={HeaderHeight}
-            parallaxHeader={this.renderParallaxHeader}
-            fixedHeader={this.renderFixedHeader}
-            stickyHeader={this.renderStickyHeader}>
-            <View style={Styles.content}>
-              <Text>Content</Text>
-            </View>
-          </ParallaxScrollView>
-        </SafeAreaView>
+        //<SafeAreaView style={{flex: 1}}>
+          <ParallaxScroll
+      renderHeader={this.renderFixedHeader}
+      headerHeight={50}
+      isHeaderFixed={true}
+      parallaxHeight={250}
+      renderParallaxBackground={this.renderParallaxHeader}
+      renderParallaxForeground={this.renderParallaxForeground}
+      parallaxBackgroundScrollSpeed={5}
+      parallaxForegroundScrollSpeed={2.5}
+    >
+      {this.props.loading ? (
+        <ActivityIndicator size="large" color="black" />
+      ) :      (
+      <View style={{ height: 1900, backgroundColor: 'white'}}>
+      <Text>Title: {movie.title}</Text>
+      <Text>Synopsis: {movie.overview}"</Text>
+      <Text>Rating: {movie.vote_average}</Text>
+      <Text>Release date: {movie.release_date}</Text>
+      </View>)}
+    </ParallaxScroll>
+  
+        //</SafeAreaView>
       );
       }
 }
@@ -82,11 +103,22 @@ const Styles = StyleSheet.create({
     padding: 10,
     justifyContent: 'center',
   },
+  title:{
+    fontWeight: 'bold',
+    color: 'white',
+    fontSize: 30
+  },
   stickyHeader: {
     height: 50,
     width: '100%',
     backgroundColor: 'rgba(0,0,0,0.4)',
   },
+  foreground: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 250,
+  },
+
   stickyHeaderBackground: {
     ...StyleSheet.absoluteFill,
     backgroundColor: 'purple',
@@ -101,11 +133,11 @@ const Styles = StyleSheet.create({
 
 function MapToStateProps(state){
   return {
-      loading: state.loading,
-      data: state.data,
-      error: state.error,
+      loading: state.detailsReducer.loading,
+      data: state.detailsReducer.data,
+      error: state.detailsReducer.error,
       //user : state.session && state.session.user ? state.session.user : false
   }
 }
 
-export default connect(MapToStateProps,{apiCall})(MovieDetail);
+export default connect(MapToStateProps,{getMovieDetails})(MovieDetail);
