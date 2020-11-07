@@ -1,15 +1,16 @@
 import axios from 'axios';
-import {fecthData, fetchSuccess, fetchError} from './utils/ApiAction';
+import {fetchData, fetchSuccess, fetchError} from '../redux/ApiAction';
 
 const apiActionCreator = (url) => (dispatch) => {
-    dispatch(fecthData());
+    dispatch(fetchData());
     return new Promise(()=>{
         axios.get(url)
         .then((response)=>{
-            dispatch(fetchSuccess(response.data));
+            console.log(response.data.results);
+            dispatch(fetchSuccess(response.data.results));
         })
         .catch((error)=> {
-            dispatch(fetchError(error));
+            dispatch(fetchError(error.message));
             console.log(error);
         })
     })

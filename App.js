@@ -23,17 +23,17 @@ import {
   DebugInstructions,
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
+import {Provider} from 'react-redux';
+import MoviesDisplay from './screens/MoviesDisplay';
+import {store} from './redux/Store';
 
-const App: () => React$Node = () => {
+const App = () => {
   return(
-    <View
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center"
-      }}>
-      <Text>Hello, world!</Text>
-    </View>
+    <Provider store={store}>
+       <View>
+          <MoviesDisplay />
+        </View>
+    </Provider>
   );
 };
 

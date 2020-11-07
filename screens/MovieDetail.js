@@ -1,6 +1,9 @@
 import React, {Component} from 'react';
-import {Stylesheet, Text, View} from 'react-native';
+import {StyleSheet, Text, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
+import apiCall from '../services/MoviesDbApiActionCreator';
+import ParallaxScrollView from 'react-native-parallax-scroll-view';
+
 
 const HEADER_EXPANDED_HEIGHT = 300
 const HEADER_COLLAPSED_HEIGHT = 60
@@ -9,50 +12,100 @@ const { width: SCREEN_WIDTH } = Dimensions.get('screen')
 
 class MovieDetail extends Component{
     constructor(){
-        suoer();
+        super();
         this.state={
-            scrollY: new Animated.Value(0)
         }
     }
+    componentDidMount(){
+      this.props.apiCall('https://api.themoviedb.org/3/movie/'+this.state.movieId+'?api_key=1ee6cf48a26e103af8d875ebd44c7a9a&language=en-US');
+  }
+  renderParallaxHeader = (value) => {
+    return <FastImage
+    style={Styles.image}
+    source={{
+        uri: 'https://image.tmdb.org/t/p/w500/bvYjhsbxOBwpm8xLE5BhdA3a8CZ.jpg',
+        //headers: { Authorization: 'someAuthToken' },
+        priority: FastImage.priority.normal,
+    }}
+    //resizeMode={FastImage.resizeMode.contain}
+/>;
+  };
+  renderFixedHeader = (value) => {
+    return (
+      <View style={Styles.fixedHeader}>
+        <Text style={{color: 'white'}}>Fixed Header</Text>
+      </View>
+    );
+  };
+  renderStickyHeader = (value) => {
+    const opacity = value.interpolate({
+      inputRange: [0, 150, 200],
+      outputRange: [0, 0, 1],
+      extrapolate: 'clamp',
+    });
+    return (
+      <View style={Styles.stickyHeader}>
+        <Animated.View style={[Styles.stickyHeaderBackground, {opacity}]} />
+      </View>
+    );
+  };
     render(){
-        const headerHeight = this.state.scrollY.interpolate({
-            inputRange: [0, HEADER_EXPANDED_HEIGHT-HEADER_COLLAPSED_HEIGHT],
-            outputRange: [HEADER_EXPANDED_HEIGHT, HEADER_COLLAPSED_HEIGHT],
-            extrapolate: 'clamp'
-          });
-        const headerTitleOpacity = this.state.scrollY.interpolate({
-            inputRange: [0, HEADER_EXPANDED_HEIGHT-HEADER_COLLAPSED_HEIGHT],
-            outputRange: [0, 1],
-            extrapolate: 'clamp'
-          });
-          const heroTitleOpacity = this.state.scrollY.interpolate({
-            inputRange: [0, HEADER_EXPANDED_HEIGHT-HEADER_COLLAPSED_HEIGHT],
-            outputRange: [1, 0],
-            extrapolate: 'clamp'
-          });
-        return(
-            <View style={styles.container}>
-            <Animated.View style={[styles.header, { height: headerHeight }]}>
-              <Animated.Text style={{textAlign: 'center', fontSize: 18, color: 'black', marginTop: 28, opacity: headerTitleOpacity}}>{headerTitle}</Animated.Text>
-              <Animated.Text style={{textAlign: 'center', fontSize: 32, color: 'black', position: 'absolute', bottom: 16, left: 16, opacity: heroTitleOpacity}}>{headerTitle}</Animated.Text>
-            </Animated.View>
-            <ScrollView
-              contentContainerStyle={styles.scrollContainer}
-              onScroll={Animated.event(
-                [{ nativeEvent: {
-                    contentOffset: {
-                      y: this.state.scrollY
-                    }
-                  }
-                }])
-              }
-              scrollEventThrottle={16}>
-              <Text style={styles.title}>This is Title</Text>
-              <Text style={styles.content}>{str}</Text>
-            </ScrollView>
-          </View>
-        )
+        
+      const IHeight = 250;
+      const HeaderHeight = 50;
+  
+      return (
+        <SafeAreaView style={{flex: 1}}>
+          <ParallaxScrollView
+            style={{flex: 1}}
+            parallaxHeaderHeight={IHeight}
+            stickyHeaderHeight={HeaderHeight}
+            parallaxHeader={this.renderParallaxHeader}
+            fixedHeader={this.renderFixedHeader}
+            stickyHeader={this.renderStickyHeader}>
+            <View style={Styles.content}>
+              <Text>Content</Text>
+            </View>
+          </ParallaxScrollView>
+        </SafeAreaView>
+      );
       }
 }
+const Styles = StyleSheet.create({
+  image: {
+    width: '100%',
+    height: '100%',
+  },
+  fixedHeader: {
+    height: 50,
+    width: '100%',
+    padding: 10,
+    justifyContent: 'center',
+  },
+  stickyHeader: {
+    height: 50,
+    width: '100%',
+    backgroundColor: 'rgba(0,0,0,0.4)',
+  },
+  stickyHeaderBackground: {
+    ...StyleSheet.absoluteFill,
+    backgroundColor: 'purple',
+  },
+  content: {
+    width: '100%',
+    height: 10000,
+    padding: 20,
+    backgroundColor: 'green',
+  },
+});
 
-export default MovieDetail;
+function MapToStateProps(state){
+  return {
+      loading: state.loading,
+      data: state.data,
+      error: state.error,
+      //user : state.session && state.session.user ? state.session.user : false
+  }
+}
+
+export default connect(MapToStateProps,{apiCall})(MovieDetail);

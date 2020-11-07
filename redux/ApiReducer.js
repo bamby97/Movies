@@ -1,4 +1,4 @@
-import ACTION_TYPES from './utils/ActionTypes';
+import ACTION_TYPES from './ActionTypes';
 
 const initialState = {
     loading: false,
@@ -14,6 +14,7 @@ const apiReducer = (state= initialState, action) => {
                 loading: true,
             };
         case ACTION_TYPES.API_SUCCESS:
+            console.log("PAYLOAD:",action.payload);
             return {
                 ...state,
                 data: action.payload,
