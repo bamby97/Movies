@@ -36,7 +36,6 @@ const Stack = createStackNavigator();
 
 const MyStack = () => {
   return (
-    //<NavigationContainer>
       <Stack.Navigator>
         <Stack.Screen
           name="MoviesDb"
@@ -44,7 +43,6 @@ const MyStack = () => {
         />
         <Stack.Screen name="Movie" component={MovieDetail} />
       </Stack.Navigator>
-    //</NavigationContainer>
   );
 };
 

@@ -13,20 +13,18 @@ class MovieDetail extends Component{
         this.state={
         }
     }
-    language="en-US"
     componentDidMount(){
-      console.log("propsDidMount",this.props)
-      const id=this.props.route.params.id
-      const lan=this.props.route.params.lan
+      const id=this.props.id??this.props.route.params.id;
+      const lan=this.props.lan??this.props.route.params.lan;
       this.props.getMovieDetails(id,lan);
   }
   
   renderParallaxHeader = (value) => {
+    poster=this.props.poster??this.props.route.params.poster
     return <FastImage
     style={Styles.image}
     source={{
-        uri: 'https://image.tmdb.org/t/p/w500'+this.props.route.params.poster,
-        //headers: { Authorization: 'someAuthToken' },
+        uri: 'https://image.tmdb.org/t/p/w500'+poster,
         priority: FastImage.priority.normal,
     }}
     //resizeMode={FastImage.resizeMode.contain}
@@ -35,7 +33,7 @@ class MovieDetail extends Component{
   renderFixedHeader = (value) => {
     return (
       <View style={Styles.fixedHeader}>
-        <Text style={{color: 'white'}}>{this.props.route.params.title}</Text>
+        <Text style={{color: 'white'}}>{this.props.title??this.props.route.params.title}</Text>
       </View>
     );
   };
@@ -55,7 +53,7 @@ class MovieDetail extends Component{
   renderParallaxForeground= (value) => {
     return(
       <View style={Styles.foreground}>
-        <Text style={Styles.title}>{this.props.route.params.title}</Text>
+        <Text style={Styles.title}>{this.props.title??this.props.route.params.title}</Text>
         </View>
     );
   }
@@ -66,7 +64,6 @@ class MovieDetail extends Component{
       const HeaderHeight = 50;
       console.log("MOVIE",movie)
       return (
-        //<SafeAreaView style={{flex: 1}}>
           <ParallaxScroll
       renderHeader={this.renderFixedHeader}
       headerHeight={50}
@@ -77,18 +74,17 @@ class MovieDetail extends Component{
       parallaxBackgroundScrollSpeed={5}
       parallaxForegroundScrollSpeed={2.5}
     >
-      {this.props.loading ? (
+      {this.props.loading||!movie ? (
         <ActivityIndicator size="large" color="black" />
       ) :      (
       <View style={{ height: 1900, backgroundColor: 'white'}}>
-      <Text>Title: {movie.title}</Text>
-      <Text>Synopsis: {movie.overview}"</Text>
-      <Text>Rating: {movie.vote_average}</Text>
-      <Text>Release date: {movie.release_date}</Text>
+      <Text>Title: {this.props.homelandscape?(this.props.title):(movie.title)}</Text>
+      <Text>Synopsis: {this.props.homelandscape?(this.props.overview):(movie.overview)}"</Text>
+      <Text>Rating: {this.props.homelandscape?(this.props.rating):(movie.vote_average)}</Text>
+      <Text>Release date: {this.props.homelandscape?(this.props.release):(movie.release_date)}</Text>
       </View>)}
     </ParallaxScroll>
   
-        //</SafeAreaView>
       );
       }
 }
@@ -116,7 +112,7 @@ const Styles = StyleSheet.create({
   foreground: {
     justifyContent: 'center',
     alignItems: 'center',
-    height: 250,
+    height: '100%',
   },
 
   stickyHeaderBackground: {
@@ -136,7 +132,6 @@ function MapToStateProps(state){
       loading: state.detailsReducer.loading,
       data: state.detailsReducer.data,
       error: state.detailsReducer.error,
-      //user : state.session && state.session.user ? state.session.user : false
   }
 }
 
